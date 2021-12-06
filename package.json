@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Emily-Waters/tinyapp/issues"
   },
-  "homepage": "https://github.com/Emily-Waters/tinyapp#readme"
+  "homepage": "https://github.com/Emily-Waters/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
