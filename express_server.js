@@ -55,21 +55,30 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 
 // Homepage
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase};
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.headers.cookie
+  };
   res.render("urls_index", templateVars);
 });
 
 // New URL's page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.headers.cookie
+  };
+  res.render("urls_new",templateVars);
 });
 
 // Show a URL by its shortURL
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const longURL = urlDatabase[shortURL];
-  const templateVars = {shortURL,longURL};
-  console.log(templateVars);
+  const templateVars = {
+    shortURL,
+    longURL,
+    username: req.headers.cookie
+  };
   res.render("urls_show",templateVars);
 });
 
@@ -89,8 +98,6 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const newDBEntry = generateRandomString();
   urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
-  const templateVars = {shortURL: newDBEntry, longURL: req.body.longURL};
-  // res.render("urls_show",templateVars);
   res.redirect(`/urls/${newDBEntry}`);
 });
 
@@ -104,5 +111,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // Edit a URL, then redirect back to homepage
 app.post("/urls/edit/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = `http://www.${req.body.longURL}`;
+  res.redirect("/urls");
+});
+
+app.post("/login", (req, res) => {
+  res.cookie("username",`${req.body.username}`);
+  res.redirect("/urls");
+});
+
+app.post("/logout/:username", (req, res) => {
+  res.clearCookie("username",`${req.body.username}`);
   res.redirect("/urls");
 });
