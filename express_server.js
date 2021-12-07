@@ -47,3 +47,18 @@ app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
+
+const generateRandomString = function() {
+
+  let encodeString = '';
+  let randomNumber = (Math.floor((Math.random() * 122) + 1));
+
+  while (encodeString.length < 6) {
+    randomNumber = (Math.floor((Math.random() * 122) + 1));
+    if (randomNumber >= 48 && randomNumber <= 57 || randomNumber >= 65 && randomNumber <= 90 || randomNumber >= 97 && randomNumber <= 122) {
+      encodeString += String.fromCharCode(randomNumber);
+    }
+  }
+  return encodeString;
+};
+
