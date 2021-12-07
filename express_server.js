@@ -53,23 +53,26 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 
 //--------------------------------MAIN BODY-------------------------------------
 
-
-app.get("/urls", (req, res) => {  // Main URL's page
+// Main URL's page
+app.get("/urls", (req, res) => {
   const templateVars = {urls: urlDatabase};
   res.render("urls_index", templateVars);
 });
 
-app.post("/urls", (req, res) => { // POST requests for new URL's
+// POST requests for new URL's
+app.post("/urls", (req, res) => {
   const newDBEntry = generateRandomString();
   urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
   res.redirect("urls");
 });
 
-app.get("/urls/new", (req, res) => {  // New URL's page
+// New URL's page
+app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.get("/u/:shortURL", (req, res) => { // Redirects using encoded strings
+// Redirects using encoded strings
+app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   if (longURL) {
     res.redirect(longURL);
@@ -78,8 +81,9 @@ app.get("/u/:shortURL", (req, res) => { // Redirects using encoded strings
   }
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {  // Delete URL
-  delete urlDatabase[req.params.shortURL];          // Redirect to /urls
+// Delete URL then redirect to urls_index => /urls
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
   req.url = '';
   res.redirect('/urls');
 });
