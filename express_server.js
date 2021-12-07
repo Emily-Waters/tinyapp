@@ -61,7 +61,7 @@ app.get("/urls", (req, res) => {  // Main URL's page
 
 app.post("/urls", (req, res) => { // POST requests for new URL's
   const newDBEntry = generateRandomString();
-  urlDatabase[newDBEntry] = `${req.body.longURL}`;
+  urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
   res.redirect("urls");
 });
 
