@@ -1,58 +1,17 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-
 const app = express();
-const PORT = 8080; // default port 8080
 
-app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({extended: true}));
+//------------------------------CONSTANTS---------------------------------------
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
+//------------------------------FUNCTIONS---------------------------------------
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase};
-  res.render("urls_index", templateVars);
-});
-
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-
-app.get("/urls/:shortURL", (req, res) => {
-  // const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-  // res.render("urls_show", templateVars);
-
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
-
-
-app.post("/urls", (req, res) => {
-  const newDBEntry = generateRandomString();
-  urlDatabase[newDBEntry] = `${req.body.longURL}`;
-  res.redirect("urls");
-});
-
-const generateRandomString = function() {
+const generateRandomString = function() { //Generate encoded string
 
   let encodeString = '';
   let randomNumber = (Math.floor((Math.random() * 122) + 1));
@@ -66,7 +25,59 @@ const generateRandomString = function() {
   return encodeString;
 };
 
-app.get("/u/:shortURL", (req, res) => {
-  // const longURL = ...
+//------------------------------CONNECT-----------------------------------------
 
+const PORT = 8080; // Default port 8080
+
+app.set('view engine', 'ejs');  // Setting the view engine as ejs
+
+app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URL's
+
+app.listen(PORT, () => {  // Begin listening on port 8080
+  console.log(`tinyapp listening on port ${PORT}!`);
 });
+
+//------------------------------EXAMPLES----------------------------------------
+
+// app.get("/", (req, res) => {
+//   res.send("Hello!");
+// });
+
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
+
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
+
+//--------------------------------MAIN BODY-------------------------------------
+
+
+app.get("/urls", (req, res) => {  //Main URL's page
+  const templateVars = {urls: urlDatabase};
+  res.render("urls_index", templateVars);
+});
+
+app.post("/urls", (req, res) => { //POST requests for new URL's
+  const newDBEntry = generateRandomString();
+  urlDatabase[newDBEntry] = `${req.body.longURL}`;
+  res.redirect("urls");
+});
+
+app.get("/urls/new", (req, res) => {  //New URL's page
+  res.render("urls_new");
+});
+
+app.get("/u/:shortURL", (req, res) => { //Redirects using encoded strings
+  const longURL = urlDatabase[req.params.shortURL];
+  if (longURL) {
+    res.redirect(longURL);
+  } else {
+    res.send("404 - Not Found");
+  }
+});
+
+
+
+
