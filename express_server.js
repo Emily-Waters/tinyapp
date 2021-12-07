@@ -78,6 +78,12 @@ app.get("/u/:shortURL", (req, res) => { // Redirects using encoded strings
   }
 });
 
+app.post("/urls/:shortURL/delete", (req, res) => {  // Delete URL
+  delete urlDatabase[req.params.shortURL];          // Redirect to /urls
+  req.url = '';
+  res.redirect('/urls');
+});
 
+//------------------------------------------------------------------------------
 
 
