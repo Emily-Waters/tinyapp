@@ -59,16 +59,23 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// POST requests for new URL's
+// POST requests for new URL's, renders urls_show
 app.post("/urls", (req, res) => {
   const newDBEntry = generateRandomString();
   urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
-  res.redirect("urls");
+  const templateVars = {shortURL: newDBEntry, longURL: req.body.longURL};
+  res.render("urls_show",templateVars);
 });
 
 // New URL's page
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
+});
+
+app.get("/urls/show", (req, res) => {
+  console.log(req);
+  const templateVars = {urls: urlDatabase};
+  res.render("urls_show",templateVars);
 });
 
 // Redirects using encoded strings
@@ -85,7 +92,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   req.url = '';
-  res.redirect('/urls');
+  res.redirect("/urls");
 });
 
 //------------------------------------------------------------------------------
