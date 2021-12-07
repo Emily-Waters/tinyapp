@@ -54,22 +54,22 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 //--------------------------------MAIN BODY-------------------------------------
 
 
-app.get("/urls", (req, res) => {  //Main URL's page
+app.get("/urls", (req, res) => {  // Main URL's page
   const templateVars = {urls: urlDatabase};
   res.render("urls_index", templateVars);
 });
 
-app.post("/urls", (req, res) => { //POST requests for new URL's
+app.post("/urls", (req, res) => { // POST requests for new URL's
   const newDBEntry = generateRandomString();
   urlDatabase[newDBEntry] = `${req.body.longURL}`;
   res.redirect("urls");
 });
 
-app.get("/urls/new", (req, res) => {  //New URL's page
+app.get("/urls/new", (req, res) => {  // New URL's page
   res.render("urls_new");
 });
 
-app.get("/u/:shortURL", (req, res) => { //Redirects using encoded strings
+app.get("/u/:shortURL", (req, res) => { // Redirects using encoded strings
   const longURL = urlDatabase[req.params.shortURL];
   if (longURL) {
     res.redirect(longURL);
