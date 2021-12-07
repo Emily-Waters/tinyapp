@@ -51,20 +51,12 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
 
-//--------------------------------MAIN BODY-------------------------------------
+//----------------------------------GET-----------------------------------------
 
-// Main URL's page
+// Homepage
 app.get("/urls", (req, res) => {
   const templateVars = {urls: urlDatabase};
   res.render("urls_index", templateVars);
-});
-
-// POST requests for new URL's, renders urls_show
-app.post("/urls", (req, res) => {
-  const newDBEntry = generateRandomString();
-  urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
-  const templateVars = {shortURL: newDBEntry, longURL: req.body.longURL};
-  res.render("urls_show",templateVars);
 });
 
 // New URL's page
@@ -72,13 +64,16 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.get("/urls/show", (req, res) => {
-  console.log(req);
-  const templateVars = {urls: urlDatabase};
+// Show a URL by its shortURL
+app.get("/urls/:shortUrl", (req, res) => {
+  const shortURL = req.params.shortUrl;
+  const longURL = urlDatabase[shortURL];
+  const templateVars = {shortURL,longURL};
+  console.log(templateVars);
   res.render("urls_show",templateVars);
 });
 
-// Redirects using encoded strings
+// Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   if (longURL) {
@@ -88,13 +83,26 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-// Delete URL then redirect to urls_index => /urls
+//----------------------------------POST----------------------------------------
+
+// POST request for new URL's, renders urls_show
+app.post("/urls", (req, res) => {
+  const newDBEntry = generateRandomString();
+  urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
+  const templateVars = {shortURL: newDBEntry, longURL: req.body.longURL};
+  // res.render("urls_show",templateVars);
+  res.redirect(`/urls/${newDBEntry}`);
+});
+
+// Delete URL then redirect back to homepage
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   req.url = '';
   res.redirect("/urls");
 });
 
-//------------------------------------------------------------------------------
-
-
+// Edit a URL, then redirect back to homepage
+app.post("/urls/edit/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL] = `http://www.${req.body.longURL}`;
+  res.redirect("/urls");
+});
