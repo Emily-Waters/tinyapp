@@ -85,7 +85,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 //----------------------------------POST----------------------------------------
 
-// POST request for new URL's, renders urls_show
+// POST request for new URL's, redirects to urls_show
 app.post("/urls", (req, res) => {
   const newDBEntry = generateRandomString();
   urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
