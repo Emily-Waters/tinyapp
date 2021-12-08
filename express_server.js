@@ -72,6 +72,14 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new",templateVars);
 });
 
+// Register new user
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.headers.cookie
+  };
+  res.render("urls_register", templateVars);
+});
+
 // Show a URL by its shortURL
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
@@ -93,6 +101,8 @@ app.get("/u/:shortURL", (req, res) => {
     res.send("404 - Not Found");
   }
 });
+
+
 
 //----------------------------------POST----------------------------------------
 
@@ -120,6 +130,13 @@ app.post("/login", (req, res) => {
   res.cookie("username",`${req.body.username}`);
   res.redirect("/urls");
 });
+
+// app.get("/register", (req, res) => {
+//   const templateVars = {
+//     username: req.headers.cookie
+//   };
+//   res.render("urls_register", templateVars);
+// });
 
 app.post("/logout/:username", (req, res) => {
   res.clearCookie("username",`${req.body.username}`);
