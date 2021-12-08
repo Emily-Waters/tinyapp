@@ -28,7 +28,8 @@ const users = {
 
 //------------------------------FUNCTIONS---------------------------------------
 
-const generateRandomString = function() { // Generate encoded string
+// Generate encoded string
+const generateRandomString = function() {
 
   let encodeString = '';
   let randomNumber = (Math.floor((Math.random() * 122) + 1));
@@ -42,22 +43,32 @@ const generateRandomString = function() { // Generate encoded string
   return encodeString;
 };
 
-//  Check user provided email address is not in user database
-const validateUniqueEmail = function(userEmail ,userDB) {
+// Check for user provided email address in user database
+const validateEmail = function(userEmail ,userDB) {
   for (const user in userDB) {
-    if (userDB[user].email === userEmail || !userEmail) {
-      return false;
+    if (userDB[user].email === userEmail) {
+      return true;
     }
   }
-  return true;
+  return false;
 };
 
-// Check user password is not blank (for now)
-const validateNonEmptyPassword = function(password) {
-  if (!password) {
-    return false;
+// Check user password matches email
+const validatePassword = function(password, email, userDB) {
+  for (const user in userDB) {
+    if (userDB[user].email === email && userDB[user].password === password) {
+      return true;
+    }
   }
-  return true;
+  return false;
+};
+
+// Looks up unique userID by email, assumes security checks have been passed
+const getUserIDByEmail = function(email, userDB) {
+  for (const user in userDB)
+    if (userDB[user].email === email) {
+      return userDB[user].id;
+    }
 };
 
 //------------------------------CONNECT-----------------------------------------
@@ -120,7 +131,7 @@ app.get("/register", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = {
-    "user_id": ''
+    "user_id": users[req.cookies.user_id]
   };
   res.render("urls_login",templateVars);
 });
@@ -171,8 +182,15 @@ app.post("/urls/edit/:shortURL", (req, res) => {
 
 // Login user
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.email);
-  res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+  if (validateEmail(email, users) && validatePassword(password, email, users)) {
+    const userID = getUserIDByEmail(email,users);
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+  } else {
+    res.send(403);
+  }
 });
 
 // Logout user
@@ -186,7 +204,7 @@ app.post("/logout/:user_id", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (validateUniqueEmail(email, users) && validateNonEmptyPassword(password)) {
+  if (!validateEmail(email, users) && password && email) {
     const id = generateRandomString();
     users[id] = {
       id,
