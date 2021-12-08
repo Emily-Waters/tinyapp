@@ -1,6 +1,8 @@
 const express = require("express");
+const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const app = express();
+morgan('tiny');
 
 //------------------------------CONSTANTS---------------------------------------
 
@@ -11,7 +13,7 @@ const urlDatabase = {
 
 //------------------------------FUNCTIONS---------------------------------------
 
-const generateRandomString = function() { //Generate encoded string
+const generateRandomString = function() { // Generate encoded string
 
   let encodeString = '';
   let randomNumber = (Math.floor((Math.random() * 122) + 1));
