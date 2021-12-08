@@ -11,12 +11,12 @@
       </div>
       <div class="navbar-nav" style="margin-left: auto;">
         <% if(!user_id) { %>
-          <form class="form-inline" action="/login" method="POST">
-            <input class="form-control" type="text" name="username" placeholder="username" style="width: 300px">
-            <button type="submit" class="btn btn-primary">Login</button>
+          <form class="form-inline" action="/register" method="GET">
+            <button type="submit" class="btn btn-primary">Register</button>
           </form>
         <% } else { %>
           <form method="POST" action="/logout/:user_id">
+            <label style ="font-size: large; font-family:'sans-serif';">Signed in as: <%= user_id.email %></label>
             <button class="btn btn-primary" style="background-color:white; border: 2px solid; border-color: red; color: red;">Logout
             </button>
           </form>
