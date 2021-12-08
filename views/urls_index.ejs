@@ -13,6 +13,7 @@
   <%- include('partials/_header') %>
 
   <main style="margin: 1em;">
+    <% if (Object.keys(urls).length > 0) { %>
     <h3>My URLs</h3>
     <table class="table">
       <thead>
@@ -40,10 +41,15 @@
                 </button>
               </form>
             </td>
-
           </tr>          
         <% } %>
       </tbody>
+      <% } else { %>
+        <div class="alert alert-danger" style="text-align: center; margin-top: 10em">
+
+          <p class="card-text">You don't have any URLs yet, want to <a href='urls/new'>make</a> some?</p>
+        </div>
+      <% } %>
     </table>
   </main>
   <!-- Bootstrap JS -->
