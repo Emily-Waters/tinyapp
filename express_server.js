@@ -2,13 +2,28 @@ const express = require("express");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const app = express();
-morgan('tiny');
+const cookieParser = require('cookie-parser');
 
 //------------------------------CONSTANTS---------------------------------------
+
+const PORT = 8080; // Default port 8080
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
 };
 
 //------------------------------FUNCTIONS---------------------------------------
@@ -29,12 +44,6 @@ const generateRandomString = function() { // Generate encoded string
 
 //------------------------------CONNECT-----------------------------------------
 
-const PORT = 8080; // Default port 8080
-
-app.set('view engine', 'ejs');  // Setting the view engine as ejs
-
-app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URL's
-
 app.listen(PORT, () => {  // Begin listening on port 8080
   console.log(`tinyapp listening on port ${PORT}!`);
 });
@@ -53,21 +62,32 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
 
+
+//-------------------------------APP SETUP--------------------------------------
+
+app.set('view engine', 'ejs');  // Setting the view engine as ejs
+
+app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URL's
+
+app.use(cookieParser()); // Cookie Parser decodes cookies
+
+app.use(morgan('tiny'));  // Logs pertinent info to the console
+
 //----------------------------------GET-----------------------------------------
 
 // Homepage
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.headers.cookie
+    "user_id": users[req.cookies.user_id]
   };
   res.render("urls_index", templateVars);
 });
 
-// New URL's page
+// New URLs page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.headers.cookie
+    "user_id": users[req.cookies.user_id]
   };
   res.render("urls_new",templateVars);
 });
@@ -75,7 +95,7 @@ app.get("/urls/new", (req, res) => {
 // Register new user
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.headers.cookie
+    "user_id": users[req.cookies.user_id]
   };
   res.render("urls_register", templateVars);
 });
@@ -87,7 +107,7 @@ app.get("/urls/:shortUrl", (req, res) => {
   const templateVars = {
     shortURL,
     longURL,
-    username: req.headers.cookie
+    "user_id": users[req.cookies.user_id]
   };
   res.render("urls_show",templateVars);
 });
@@ -101,8 +121,6 @@ app.get("/u/:shortURL", (req, res) => {
     res.send("404 - Not Found");
   }
 });
-
-
 
 //----------------------------------POST----------------------------------------
 
@@ -126,19 +144,29 @@ app.post("/urls/edit/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
+// Login user
 app.post("/login", (req, res) => {
   res.cookie("username",`${req.body.username}`);
   res.redirect("/urls");
 });
 
-// app.get("/register", (req, res) => {
-//   const templateVars = {
-//     username: req.headers.cookie
-//   };
-//   res.render("urls_register", templateVars);
-// });
-
-app.post("/logout/:username", (req, res) => {
-  res.clearCookie("username",`${req.body.username}`);
+// Logout user
+app.post("/logout/:user_id", (req, res) => {
+  res.clearCookie("user_id", req.cookies);
   res.redirect("/urls");
 });
+
+
+// Register new user
+app.post("/register", (req, res) => {
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  };
+  res.cookie("user_id", userID);
+  res.redirect("/urls");
+});
+
+
