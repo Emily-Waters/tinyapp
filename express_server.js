@@ -115,10 +115,15 @@ app.get("/urls", (req, res) => {
 
 // New URLs page
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    "user_id": users[req.cookies.user_id]
-  };
-  res.render("urls_new",templateVars);
+  const id = req.cookies.user_id;
+  if (id) {
+    const templateVars = {
+      "user_id": users[req.cookies.user_id]
+    };
+    res.render("urls_new",templateVars);
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // Register new user
