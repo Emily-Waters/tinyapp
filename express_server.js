@@ -175,12 +175,18 @@ app.get("/login", (req, res) => {
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const longURL = urlDatabase[req.params.shortUrl].longURL;
-  const templateVars = {
-    shortURL,
-    longURL,
-    "user_id": users[req.cookies.user_id]
-  };
-  res.render("urls_show",templateVars);
+  const userID = req.cookies.user_id;
+  console.log(userID);
+  if (userID) {
+    const templateVars = {
+      shortURL,
+      longURL,
+      "user_id": userID
+    };
+    res.render("urls_show",templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // Redirects to actual site using shortURL
@@ -189,7 +195,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (longURL) {
     res.redirect(longURL);
   } else {
-    res.send("404 - Not Found");
+    res.status(404).send("404 - Not Found");
   }
 });
 
@@ -206,15 +212,32 @@ app.post("/urls", (req, res) => {
 
 // Delete URL then redirect back to homepage
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  // req.url = '';
-  res.redirect("/urls");
+  const userID = req.cookies.user_id;
+  const shortURL = req.params.shortURL;
+  if (userID && userID === urlDatabase[shortURL].userID) {
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("You do not have permission to delete, please login first\n");
+  }
 });
 
 // Edit a URL, then redirect back to homepage
-app.post("/urls/edit/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = `http://www.${req.body.longURL}`;
-  res.redirect("/urls");
+app.post("/urls/:shortURL/edit", (req, res) => {
+  const userID = req.cookies.user_id;
+  const shortURL = req.params.shortURL;
+  const longURL = req.body.longURL;
+  console.log(longURL);
+  if (userID && userID === urlDatabase[shortURL].userID) {
+    console.log(urlDatabase);
+    makeURLByID(userID, urlDatabase, longURL, shortURL);
+    console.log(urlDatabase);
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("You do not have permission to edit, please login first\n");
+  }
+  // urlDatabase[req.params.shortURL].longURL = `http://www.${req.body.longURL}`;
+  // res.redirect("/urls");
 });
 
 // Login user
@@ -226,7 +249,7 @@ app.post("/login", (req, res) => {
     res.cookie("user_id", userID);
     res.redirect("/urls");
   } else {
-    res.send(403);
+    res.status(403).send("Invalid email or password\n");
   }
 });
 
@@ -250,8 +273,11 @@ app.post("/register", (req, res) => {
     };
     res.cookie("user_id", id);
     res.redirect("/urls");
+  } else if (validateEmail(email, users)) {
+    res.status(400).send("That email address is already in use\n");
   } else {
-    res.send(400);
+    res.status(400).send("Invalid email or password\n");
+
   }
 });
 
