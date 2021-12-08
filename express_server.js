@@ -8,7 +8,7 @@ const app = express();
 // const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const getIDByEmail = require('./helpers');
+const { getUserByEmail } = require('./helpers');
 
 
 // urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it
@@ -216,8 +216,8 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (validateEmail(email, userDatabase) && validatePassword(password, email, userDatabase)) {
-    const userID = getIDByEmail(email,userDatabase);
-    req.session['user_id'] = userID;
+    const userID = getUserByEmail(email,userDatabase);
+    req.session['user_id'] = userID.id;
     res.redirect("/urls");
   } else {
     res.status(403).send("Invalid email or password\n");
