@@ -3,13 +3,16 @@
 // const morgan = require("morgan");
 // app.use(morgan('tiny'));  // Logs pertinent info to the console for dev
 
-//------------------------------CONSTANTS---------------------------------------
+//------------------------------DEPENDENCY IMPORT-------------------------------
 
-const PORT = 8080; // Default port 8080
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
+
+//------------------------------CONSTANTS---------------------------------------
+
+
 
 // urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it. Example format is included.
 const urlDatabase = {
@@ -49,12 +52,12 @@ app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URLs
 
 app.use(cookieSession({  // Cookie Session stores session cookies on the client
   name: 'session',
-  keys: ['user_id'],
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  keys: ['user_id']
 }));
 
 //------------------------------CONNECT-----------------------------------------
+
+const PORT = 8080; // Default port 8080
 
 app.listen(PORT, () => {  // Begin listening on port 8080
   console.log(`tinyapp listening on port ${PORT}!`);
@@ -62,7 +65,7 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 
 //------------------------------GET ROUTES--------------------------------------
 
-// Homepage
+// Homepage - Redirects to login
 app.get("/urls", (req, res) => {
   const userID = grabThemByTheCookie(req);
   if (userID) {
@@ -70,7 +73,6 @@ app.get("/urls", (req, res) => {
       urls: getURL(userID, urlDatabase),
       "user_id": userDatabase[userID]
     };
-    console.log(templateVars);
     res.render("urls_index", templateVars);
   } else {
     res.redirect('/login');
@@ -112,7 +114,6 @@ app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const longURL = urlDatabase[req.params.shortUrl].longURL;
   const userID = grabThemByTheCookie(req);
-  console.log(userID);
   if (userID) {
     const templateVars = {
       shortURL,
@@ -142,9 +143,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  console.log("Password: ",password);
   const hashedPassword = bcrypt.hashSync(password, 10);
-  console.log("HashedPassword: ",hashedPassword);
   if (!validateEmail(email, userDatabase) && password && email) {
     const userID = generateRandomString();
     userDatabase[userID] = {
@@ -209,11 +208,8 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const userID = grabThemByTheCookie(req);
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
-  console.log(longURL);
   if (userID && userID === urlDatabase[shortURL].userID) {
-    console.log(urlDatabase);
     makeURL(userID, urlDatabase, longURL, shortURL);
-    console.log(urlDatabase);
     res.redirect("/urls");
   } else {
     res.status(403).send("You do not have permission to edit, please login first\n");
