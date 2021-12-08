@@ -8,9 +8,22 @@ const cookieParser = require('cookie-parser');
 
 const PORT = 8080; // Default port 8080
 
+// Old urlDatabase
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com"
+// };
+
+// New urlDatabse
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
+  }
 };
 
 const users = {
@@ -71,6 +84,21 @@ const getUserIDByEmail = function(email, userDB) {
     }
 };
 
+const getUserURLsByID = function(id, urlDB) {
+  const userURLs = {};
+  for (const urls in urlDB) {
+    if (urlDB[urls].userID === id) {
+      userURLs[urls] = urlDB[urls];
+    }
+  }
+  return userURLs;
+};
+
+const makeURLByID = function(id, urlDB, url,encodeEntry) {
+  urlDB[encodeEntry] = {longURL: url, userID: id};
+};
+
+
 //------------------------------CONNECT-----------------------------------------
 
 app.listen(PORT, () => {  // Begin listening on port 8080
@@ -106,10 +134,12 @@ app.use(morgan('tiny'));  // Logs pertinent info to the console
 
 // Homepage
 app.get("/urls", (req, res) => {
+  const userID = req.cookies.user_id;
   const templateVars = {
-    urls: urlDatabase,
-    "user_id": users[req.cookies.user_id]
+    urls: getUserURLsByID(userID, urlDatabase),
+    "user_id": users[userID]
   };
+  console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
@@ -118,7 +148,7 @@ app.get("/urls/new", (req, res) => {
   const id = req.cookies.user_id;
   if (id) {
     const templateVars = {
-      "user_id": users[req.cookies.user_id]
+      "user_id": users[id]
     };
     res.render("urls_new",templateVars);
   } else {
@@ -167,9 +197,11 @@ app.get("/u/:shortURL", (req, res) => {
 
 // POST request for new URL's, redirects to urls_show
 app.post("/urls", (req, res) => {
-  const newDBEntry = generateRandomString();
-  urlDatabase[newDBEntry] = `http://www.${req.body.longURL}`;
-  res.redirect(`/urls/${newDBEntry}`);
+  const encodeString = generateRandomString();
+  const userID = req.cookies.user_id;
+  const longURL = req.body.longURL;
+  makeURLByID(userID, urlDatabase, longURL, encodeString);
+  res.redirect('/urls/' + longURL);
 });
 
 // Delete URL then redirect back to homepage

@@ -27,7 +27,7 @@
         <% for(let url in urls) { %>
           <tr>
             <td><a href="u/<%= url %>"><%= url %></a></td>
-            <td><a href="<%= urls[url] %>"><%= urls[url] %></a></td>
+            <td><a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a></td>
             <td>
               <form method="GET" action="/urls/<%=url%>">
                 <button class="btn btn-primary" style="background-color:white; border: 2px solid; border-color: blue; color: blue;">Edit
