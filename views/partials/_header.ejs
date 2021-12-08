@@ -11,8 +11,11 @@
       </div>
       <div class="navbar-nav" style="margin-left: auto;">
         <% if(!user_id) { %>
+          <form class="form-inline" action="/login" method="GET">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </form>
           <form class="form-inline" action="/register" method="GET">
-            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="submit" class="btn btn-primary" style="margin-left: 1em;">Register</button>
           </form>
         <% } else { %>
           <form method="POST" action="/logout/:user_id">
