@@ -94,8 +94,8 @@ const getUserURLsByID = function(id, urlDB) {
   return userURLs;
 };
 
-const makeURLByID = function(id, urlDB, url,encodeEntry) {
-  urlDB[encodeEntry] = {longURL: url, userID: id};
+const makeURLByID = function(id, urlDB, url, encodeEntry) {
+  urlDB[encodeEntry] = {longURL: `http://www.${url}`, userID: id};
 };
 
 
@@ -148,7 +148,7 @@ app.get("/urls/new", (req, res) => {
   const id = req.cookies.user_id;
   if (id) {
     const templateVars = {
-      "user_id": users[id]
+      "user_id": users[id],
     };
     res.render("urls_new",templateVars);
   } else {
@@ -174,7 +174,7 @@ app.get("/login", (req, res) => {
 // Show a URL by its shortURL
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[req.params.shortUrl].longURL;
   const templateVars = {
     shortURL,
     longURL,
@@ -185,7 +185,7 @@ app.get("/urls/:shortUrl", (req, res) => {
 
 // Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   if (longURL) {
     res.redirect(longURL);
   } else {
@@ -201,19 +201,19 @@ app.post("/urls", (req, res) => {
   const userID = req.cookies.user_id;
   const longURL = req.body.longURL;
   makeURLByID(userID, urlDatabase, longURL, encodeString);
-  res.redirect('/urls/' + longURL);
+  res.redirect('/urls/' + encodeString);
 });
 
 // Delete URL then redirect back to homepage
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
-  req.url = '';
+  // req.url = '';
   res.redirect("/urls");
 });
 
 // Edit a URL, then redirect back to homepage
 app.post("/urls/edit/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = `http://www.${req.body.longURL}`;
+  urlDatabase[req.params.shortURL].longURL = `http://www.${req.body.longURL}`;
   res.redirect("/urls");
 });
 
