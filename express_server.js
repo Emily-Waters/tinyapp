@@ -43,7 +43,7 @@ const generateRandomString = function() { // Generate encoded string
 };
 
 //  Check user provided email address is not in user database
-const validateEmail = function(userEmail ,userDB) {
+const validateUniqueEmail = function(userEmail ,userDB) {
   for (const user in userDB) {
     if (userDB[user].email === userEmail || !userEmail) {
       return false;
@@ -53,7 +53,7 @@ const validateEmail = function(userEmail ,userDB) {
 };
 
 // Check user password is not blank (for now)
-const validatePassword = function(password) {
+const validateNonEmptyPassword = function(password) {
   if (!password) {
     return false;
   }
@@ -118,6 +118,13 @@ app.get("/register", (req, res) => {
   res.render("urls_register", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = {
+    "user_id": ''
+  };
+  res.render("urls_login",templateVars);
+});
+
 // Show a URL by its shortURL
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
@@ -164,7 +171,7 @@ app.post("/urls/edit/:shortURL", (req, res) => {
 
 // Login user
 app.post("/login", (req, res) => {
-  res.cookie("username",`${req.body.username}`);
+  res.cookie("user_id", req.body.email);
   res.redirect("/urls");
 });
 
@@ -179,7 +186,7 @@ app.post("/logout/:user_id", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (validateEmail(email, users) && validatePassword(password)) {
+  if (validateUniqueEmail(email, users) && validateNonEmptyPassword(password)) {
     const id = generateRandomString();
     users[id] = {
       id,
