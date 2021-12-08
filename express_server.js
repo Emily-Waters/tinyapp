@@ -6,6 +6,8 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const app = express();
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
+
 
 // urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it
 const urlDatabase = {
@@ -62,7 +64,7 @@ const validateEmail = function(email, userDB) {
 // Check user password matches email
 const validatePassword = function(password, email, userDB) {
   for (const userID in userDB) {
-    if (userDB[userID].email === email && userDB[userID].password === password) {
+    if (userDB[userID].email === email && bcrypt.compareSync(password,userDB[userID].password)) {
       return true;
     }
   }
@@ -188,12 +190,15 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  console.log("Password: ",password);
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  console.log("HashedPassword: ",hashedPassword);
   if (!validateEmail(email, userDatabase) && password && email) {
     const userID = generateRandomString();
     userDatabase[userID] = {
       id: userID,
       email,
-      password
+      password: hashedPassword
     };
     res.cookie("user_id", userID);
     res.redirect("/urls");
