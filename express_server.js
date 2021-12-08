@@ -8,6 +8,7 @@ const app = express();
 // const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
+const getIDByEmail = require('./helpers');
 
 
 // urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it
@@ -72,16 +73,8 @@ const validatePassword = function(password, email, userDB) {
   return false;
 };
 
-// Looks up unique userID by email, assumes security checks have been passed
-const getIDByEmail = function(email, userDB) {
-  for (const userID in userDB)
-    if (userDB[userID].email === email) {
-      return userDB[userID].id;
-    }
-};
-
 // Filters urlDatabase using userID
-const getURLByID = function(id, urlDB) {
+const getURL = function(id, urlDB) {
   const userURLs = {};
   for (const shortURL in urlDB) {
     if (urlDB[shortURL].userID === id) {
@@ -92,7 +85,7 @@ const getURLByID = function(id, urlDB) {
 };
 
 // Creates a new urlDatabase entry tied to a given userID
-const makeURLDBEntry = function(userID, urlDB, longURL, encodedString) {
+const makeURL = function(userID, urlDB, longURL, encodedString) {
   urlDB[encodedString] = {longURL: `http://www.${longURL}`, userID: userID};
 };
 
@@ -126,7 +119,7 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const templateVars = {
-    urls: getURLByID(userID, urlDatabase),
+    urls: getURL(userID, urlDatabase),
     "user_id": userDatabase[userID]
   };
   console.log(templateVars);
@@ -242,7 +235,7 @@ app.post("/urls", (req, res) => {
   const encodeString = generateRandomString();
   const userID = req.session.user_id;
   const longURL = req.body.longURL;
-  makeURLDBEntry(userID, urlDatabase, longURL, encodeString);
+  makeURL(userID, urlDatabase, longURL, encodeString);
   res.redirect('/urls/' + encodeString);
 });
 
@@ -266,7 +259,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   console.log(longURL);
   if (userID && userID === urlDatabase[shortURL].userID) {
     console.log(urlDatabase);
-    makeURLDBEntry(userID, urlDatabase, longURL, shortURL);
+    makeURL(userID, urlDatabase, longURL, shortURL);
     console.log(urlDatabase);
     res.redirect("/urls");
   } else {
