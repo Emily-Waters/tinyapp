@@ -1,102 +1,51 @@
+//------------------------------DEV TOOLS---------------------------------------
+
+// const morgan = require("morgan");
+// app.use(morgan('tiny'));  // Logs pertinent info to the console for dev
+
 //------------------------------CONSTANTS---------------------------------------
 
 const PORT = 8080; // Default port 8080
 const express = require("express");
-const morgan = require("morgan");
 const bodyParser = require("body-parser");
-const app = express();
-// const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const { getUserByEmail } = require('./helpers');
 
-
-// urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it
+// urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it. Example format is included.
 const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW"
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW"
-  }
+  // b6UTxQ: {
+  //   longURL: "https://www.tsn.ca",
+  //   userID: "aJ48lW"
+  // }
 };
 
+// userDatabase holds users as objects by a pseudorandomly generated 6 character alphanumeric string key and each contains an id, email and password. Example format is included.
 const userDatabase = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
+  // "userRandomID": {
+  //   id: "userRandomID",
+  //   email: "user@example.com",
+  //   password: "purple-monkey-dinosaur"
 };
 
-//------------------------------FUNCTIONS---------------------------------------
+//------------------------------HELPER FUNCTIONS--------------------------------
 
-// Generate encoded string
-const generateRandomString = function() {
-
-  let encodeString = '';
-  let randomNumber = (Math.floor((Math.random() * 122) + 1));
-
-  while (encodeString.length < 6) {
-    randomNumber = (Math.floor((Math.random() * 122) + 1));
-    if (randomNumber >= 48 && randomNumber <= 57 || randomNumber >= 65 && randomNumber <= 90 || randomNumber >= 97 && randomNumber <= 122) {
-      encodeString += String.fromCharCode(randomNumber);
-    }
-  }
-  return encodeString;
-};
-
-// Check for user provided email address in user database
-const validateEmail = function(email, userDB) {
-  for (const userID in userDB) {
-    if (userDB[userID].email === email) {
-      return true;
-    }
-  }
-  return false;
-};
-
-// Check user password matches email
-const validatePassword = function(password, email, userDB) {
-  for (const userID in userDB) {
-    if (userDB[userID].email === email && bcrypt.compareSync(password,userDB[userID].password)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-// Filters urlDatabase using userID
-const getURL = function(id, urlDB) {
-  const userURLs = {};
-  for (const shortURL in urlDB) {
-    if (urlDB[shortURL].userID === id) {
-      userURLs[shortURL] = urlDB[shortURL];
-    }
-  }
-  return userURLs;
-};
-
-// Creates a new urlDatabase entry tied to a given userID
-const makeURL = function(userID, urlDB, longURL, encodedString) {
-  urlDB[encodedString] = {longURL: `http://www.${longURL}`, userID: userID};
-};
-
+const {
+  generateRandomString,
+  validateEmail,
+  validatePassword,
+  makeURL,
+  getURL,
+  getUserByEmail,
+  grabThemByTheCookie,
+} = require('./helpers');
 
 //------------------------------APP SETUP---------------------------------------
 
+const app = express();  // Setting express as the application
+
 app.set('view engine', 'ejs');  // Setting the view engine as ejs
 
-app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URL's
-
-// app.use(cookieParser()); // Cookie Parser decodes cookies
+app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URLs
 
 app.use(cookieSession({  // Cookie Session stores session cookies on the client
   name: 'session',
@@ -104,8 +53,6 @@ app.use(cookieSession({  // Cookie Session stores session cookies on the client
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
-
-app.use(morgan('tiny'));  // Logs pertinent info to the console
 
 //------------------------------CONNECT-----------------------------------------
 
@@ -117,13 +64,17 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 
 // Homepage
 app.get("/urls", (req, res) => {
-  const userID = req.session.user_id;
-  const templateVars = {
-    urls: getURL(userID, urlDatabase),
-    "user_id": userDatabase[userID]
-  };
-  console.log(templateVars);
-  res.render("urls_index", templateVars);
+  const userID = grabThemByTheCookie(req);
+  if (userID) {
+    const templateVars = {
+      urls: getURL(userID, urlDatabase),
+      "user_id": userDatabase[userID]
+    };
+    console.log(templateVars);
+    res.render("urls_index", templateVars);
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // Register new user
@@ -145,7 +96,7 @@ app.get("/login", (req, res) => {
 
 // New URLs page
 app.get("/urls/new", (req, res) => {
-  const userID = req.session.user_id;
+  const userID = grabThemByTheCookie(req);
   if (userID) {
     const templateVars = {
       "user_id": userDatabase[userID],
@@ -160,7 +111,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const longURL = urlDatabase[req.params.shortUrl].longURL;
-  const userID = req.session.user_id;
+  const userID = grabThemByTheCookie(req);
   console.log(userID);
   if (userID) {
     const templateVars = {
@@ -202,7 +153,6 @@ app.post("/register", (req, res) => {
       password: hashedPassword
     };
     req.session['user_id'] = userID;
-    // res.cookie("user_id", userID);
     res.redirect("/urls");
   } else if (validateEmail(email, userDatabase)) {
     res.status(400).send("That email address is already in use\n");
@@ -213,10 +163,13 @@ app.post("/register", (req, res) => {
 
 // Login user
 app.post("/login", (req, res) => {
+
   const email = req.body.email;
   const password = req.body.password;
+
   if (validateEmail(email, userDatabase) && validatePassword(password, email, userDatabase)) {
     const userID = getUserByEmail(email,userDatabase);
+    //using ['user_id'] here as eslint doesn't like .user_id (not camelCase)
     req.session['user_id'] = userID.id;
     res.redirect("/urls");
   } else {
@@ -233,7 +186,7 @@ app.post("/logout/:user_id", (req, res) => {
 // POST request for new URL's, redirects to urls_show
 app.post("/urls", (req, res) => {
   const encodeString = generateRandomString();
-  const userID = req.session.user_id;
+  const userID = grabThemByTheCookie(req);
   const longURL = req.body.longURL;
   makeURL(userID, urlDatabase, longURL, encodeString);
   res.redirect('/urls/' + encodeString);
@@ -241,7 +194,7 @@ app.post("/urls", (req, res) => {
 
 // Delete URL then redirect back to homepage
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.session.user_id;
+  const userID = grabThemByTheCookie(req);
   const shortURL = req.params.shortURL;
   if (userID && userID === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
@@ -253,7 +206,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // Edit a URL, then redirect back to homepage
 app.post("/urls/:shortURL/edit", (req, res) => {
-  const userID = req.session.user_id;
+  const userID = grabThemByTheCookie(req);
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
   console.log(longURL);
