@@ -201,7 +201,7 @@ app.post("/register", (req, res) => {
       email,
       password: hashedPassword
     };
-    req.session.user_id = userID;
+    req.session['user_id'] = userID;
     // res.cookie("user_id", userID);
     res.redirect("/urls");
   } else if (validateEmail(email, userDatabase)) {
@@ -217,7 +217,7 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   if (validateEmail(email, userDatabase) && validatePassword(password, email, userDatabase)) {
     const userID = getIDByEmail(email,userDatabase);
-    req.session.user_id = userID;
+    req.session['user_id'] = userID;
     res.redirect("/urls");
   } else {
     res.status(403).send("Invalid email or password\n");
