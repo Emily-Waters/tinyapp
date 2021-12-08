@@ -1,20 +1,13 @@
+//------------------------------CONSTANTS---------------------------------------
+
+const PORT = 8080; // Default port 8080
 const express = require("express");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const app = express();
 const cookieParser = require('cookie-parser');
 
-//------------------------------CONSTANTS---------------------------------------
-
-const PORT = 8080; // Default port 8080
-
-// Old urlDatabase
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
-
-// New urlDatabse
+// urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -26,7 +19,7 @@ const urlDatabase = {
   }
 };
 
-const users = {
+const userDatabase = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
@@ -57,9 +50,9 @@ const generateRandomString = function() {
 };
 
 // Check for user provided email address in user database
-const validateEmail = function(userEmail ,userDB) {
-  for (const user in userDB) {
-    if (userDB[user].email === userEmail) {
+const validateEmail = function(email, userDB) {
+  for (const userID in userDB) {
+    if (userDB[userID].email === email) {
       return true;
     }
   }
@@ -68,8 +61,8 @@ const validateEmail = function(userEmail ,userDB) {
 
 // Check user password matches email
 const validatePassword = function(password, email, userDB) {
-  for (const user in userDB) {
-    if (userDB[user].email === email && userDB[user].password === password) {
+  for (const userID in userDB) {
+    if (userDB[userID].email === email && userDB[userID].password === password) {
       return true;
     }
   }
@@ -78,49 +71,30 @@ const validatePassword = function(password, email, userDB) {
 
 // Looks up unique userID by email, assumes security checks have been passed
 const getUserIDByEmail = function(email, userDB) {
-  for (const user in userDB)
-    if (userDB[user].email === email) {
-      return userDB[user].id;
+  for (const userID in userDB)
+    if (userDB[userID].email === email) {
+      return userDB[userID].id;
     }
 };
 
+// Filters urlDatabase using userID
 const getUserURLsByID = function(id, urlDB) {
   const userURLs = {};
-  for (const urls in urlDB) {
-    if (urlDB[urls].userID === id) {
-      userURLs[urls] = urlDB[urls];
+  for (const shortURL in urlDB) {
+    if (urlDB[shortURL].userID === id) {
+      userURLs[shortURL] = urlDB[shortURL];
     }
   }
   return userURLs;
 };
 
-const makeURLByID = function(id, urlDB, url, encodeEntry) {
-  urlDB[encodeEntry] = {longURL: `http://www.${url}`, userID: id};
+// Creates a new urlDatabase entry tied to a given userID
+const makeURLByID = function(userID, urlDB, longURL, encodedString) {
+  urlDB[encodedString] = {longURL: `http://www.${longURL}`, userID: userID};
 };
 
 
-//------------------------------CONNECT-----------------------------------------
-
-app.listen(PORT, () => {  // Begin listening on port 8080
-  console.log(`tinyapp listening on port ${PORT}!`);
-});
-
-//------------------------------EXAMPLES----------------------------------------
-
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-
-
-//-------------------------------APP SETUP--------------------------------------
+//------------------------------APP SETUP---------------------------------------
 
 app.set('view engine', 'ejs');  // Setting the view engine as ejs
 
@@ -130,45 +104,53 @@ app.use(cookieParser()); // Cookie Parser decodes cookies
 
 app.use(morgan('tiny'));  // Logs pertinent info to the console
 
-//----------------------------------GET-----------------------------------------
+//------------------------------CONNECT-----------------------------------------
+
+app.listen(PORT, () => {  // Begin listening on port 8080
+  console.log(`tinyapp listening on port ${PORT}!`);
+});
+
+//------------------------------GET ROUTES--------------------------------------
 
 // Homepage
 app.get("/urls", (req, res) => {
   const userID = req.cookies.user_id;
   const templateVars = {
     urls: getUserURLsByID(userID, urlDatabase),
-    "user_id": users[userID]
+    "user_id": userDatabase[userID]
   };
   console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
+// Register new user
+app.get("/register", (req, res) => {
+  const userID = userDatabase[req.cookies.user_id];
+  const templateVars = {
+    "user_id": userID
+  };
+  res.render("urls_register", templateVars);
+});
+
+// User login
+app.get("/login", (req, res) => {
+  const templateVars = {
+    "user_id": userDatabase[req.cookies.user_id]
+  };
+  res.render("urls_login",templateVars);
+});
+
 // New URLs page
 app.get("/urls/new", (req, res) => {
-  const id = req.cookies.user_id;
-  if (id) {
+  const userID = req.cookies.user_id;
+  if (userID) {
     const templateVars = {
-      "user_id": users[id],
+      "user_id": userDatabase[userID],
     };
     res.render("urls_new",templateVars);
   } else {
     res.redirect('/login');
   }
-});
-
-// Register new user
-app.get("/register", (req, res) => {
-  const templateVars = {
-    "user_id": users[req.cookies.user_id]
-  };
-  res.render("urls_register", templateVars);
-});
-
-app.get("/login", (req, res) => {
-  const templateVars = {
-    "user_id": users[req.cookies.user_id]
-  };
-  res.render("urls_login",templateVars);
 });
 
 // Show a URL by its shortURL
@@ -191,7 +173,8 @@ app.get("/urls/:shortUrl", (req, res) => {
 
 // Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL].longURL;
   if (longURL) {
     res.redirect(longURL);
   } else {
@@ -199,7 +182,46 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-//----------------------------------POST----------------------------------------
+//------------------------------POST ROUTES-------------------------------------
+
+// Register new user
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!validateEmail(email, userDatabase) && password && email) {
+    const userID = generateRandomString();
+    userDatabase[userID] = {
+      id: userID,
+      email,
+      password
+    };
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+  } else if (validateEmail(email, userDatabase)) {
+    res.status(400).send("That email address is already in use\n");
+  } else {
+    res.status(400).send("Invalid email or password\n");
+  }
+});
+
+// Login user
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (validateEmail(email, userDatabase) && validatePassword(password, email, userDatabase)) {
+    const userID = getUserIDByEmail(email,userDatabase);
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("Invalid email or password\n");
+  }
+});
+
+// Logout user
+app.post("/logout/:user_id", (req, res) => {
+  res.clearCookie("user_id", req.cookies);
+  res.redirect("/login");
+});
 
 // POST request for new URL's, redirects to urls_show
 app.post("/urls", (req, res) => {
@@ -236,49 +258,11 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   } else {
     res.status(403).send("You do not have permission to edit, please login first\n");
   }
-  // urlDatabase[req.params.shortURL].longURL = `http://www.${req.body.longURL}`;
-  // res.redirect("/urls");
-});
-
-// Login user
-app.post("/login", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  if (validateEmail(email, users) && validatePassword(password, email, users)) {
-    const userID = getUserIDByEmail(email,users);
-    res.cookie("user_id", userID);
-    res.redirect("/urls");
-  } else {
-    res.status(403).send("Invalid email or password\n");
-  }
-});
-
-// Logout user
-app.post("/logout/:user_id", (req, res) => {
-  res.clearCookie("user_id", req.cookies);
-  res.redirect("/urls");
 });
 
 
-// Register new user
-app.post("/register", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  if (!validateEmail(email, users) && password && email) {
-    const id = generateRandomString();
-    users[id] = {
-      id,
-      email,
-      password
-    };
-    res.cookie("user_id", id);
-    res.redirect("/urls");
-  } else if (validateEmail(email, users)) {
-    res.status(400).send("That email address is already in use\n");
-  } else {
-    res.status(400).send("Invalid email or password\n");
 
-  }
-});
+
+
 
 
