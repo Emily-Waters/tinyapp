@@ -42,6 +42,24 @@ const generateRandomString = function() { // Generate encoded string
   return encodeString;
 };
 
+//  Check user provided email address is not in user database
+const validateEmail = function(userEmail ,userDB) {
+  for (const user in userDB) {
+    if (userDB[user].email === userEmail || !userEmail) {
+      return false;
+    }
+  }
+  return true;
+};
+
+// Check user password is not blank (for now)
+const validatePassword = function(password) {
+  if (!password) {
+    return false;
+  }
+  return true;
+};
+
 //------------------------------CONNECT-----------------------------------------
 
 app.listen(PORT, () => {  // Begin listening on port 8080
@@ -159,14 +177,20 @@ app.post("/logout/:user_id", (req, res) => {
 
 // Register new user
 app.post("/register", (req, res) => {
-  const userID = generateRandomString();
-  users[userID] = {
-    id: userID,
-    email: req.body.email,
-    password: req.body.password
-  };
-  res.cookie("user_id", userID);
-  res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+  if (validateEmail(email, users) && validatePassword(password)) {
+    const id = generateRandomString();
+    users[id] = {
+      id,
+      email,
+      password
+    };
+    res.cookie("user_id", id);
+    res.redirect("/urls");
+  } else {
+    res.send(400);
+  }
 });
 
 
