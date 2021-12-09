@@ -25,12 +25,13 @@ Scroll to the bottom for some screenshots of the app in use.
 
 ## Some Sample Screenshots
 
+## Login
 !["Login Page"](https://github.com/Emily-Waters/tinyapp/blob/master/docs/login.png)
-
+## Register
 !["Registration Page"](https://github.com/Emily-Waters/tinyapp/blob/master/docs/register.png)
-
+## New Short URL
 !["Creating a new short URL](https://github.com/Emily-Waters/tinyapp/blob/master/docs/shortify.png)
-
+## My URLs
 !["My URLs page"](https://github.com/Emily-Waters/tinyapp/blob/master/docs/myURLs.png)
-
+## Tiny URL info/edit
 !["Tiny URL info/edit](https://github.com/Emily-Waters/tinyapp/blob/master/docs/tinyURL.png)
