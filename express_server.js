@@ -1,3 +1,6 @@
+// TINYAPP - A project by Emily Waters, written during my time as a Lighthouse
+// Labs WebDev Bootcamp Student
+
 //------------------------------DEPENDENCY IMPORT-------------------------------
 
 const methodOverride = require('method-override');
@@ -5,29 +8,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const morgan = require("morgan");
 
-//------------------------------CONSTANTS---------------------------------------
+//------------------------------DATABASE----------------------------------------
 
-// urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it. Example format is included.
-const urlDatabase = {
-  // b6UTxQ: {
-  //   longURL: "https://www.tsn.ca",
-  //   userID: "aJ48lW"
-  //   date: string,
-  //   visitors: 0,
-  //   uniqueVisitors: [],
-  //   dateTimeVisited: []
-  // }
-};
-
-// userDatabase holds users as objects by a pseudorandomly generated 6 character alphanumeric string key and each contains an id, email and password. Example format is included.
-const userDatabase = {
-  // "userRandomID": {
-  //   id: "userRandomID",
-  //   email: "user@example.com",
-  //   password: "purple-monkey-dinosaur"
-};
+const { urlDatabase, userDatabase } = require('./database');
 
 //------------------------------HELPER FUNCTIONS--------------------------------
 
@@ -51,16 +35,18 @@ app.set('view engine', 'ejs');  // Setting the view engine as ejs
 
 app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URLs
 
-app.use(cookieSession({  // Cookie Session stores session cookies on the client
+app.use(cookieSession({  // Cookie Session encrypts cookies
   name: 'session',
   keys: ['user_id','visitor'],
-  // Cookie Options
-  // maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  // maxAge: 24 * 60 * 60 * 1000 // 24 hour expiry for cookies, disabled by default
 }));
 
-app.use(methodOverride('_method'));
+app.use(methodOverride('_method')); // Allows for use of PUT and DELETE
 
-app.use(morgan('tiny'));  // Logs pertinent info to the console for dev
+//------------------------------DEV TOOLS---------------------------------------
+
+// const morgan = require("morgan");
+// app.use(morgan('tiny'));  // Logs pertinent info to the console for dev
 
 //------------------------------CONNECT-----------------------------------------
 
@@ -234,3 +220,4 @@ app.delete("/urls/:shortURL", (req, res) => {
   }
 });
 
+//------------------------------EOF---------------------------------------------

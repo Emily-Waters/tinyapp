@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 
 // Generate encoded string
+// Not bothering to check if the string is unique, as the odds of it being nonunique are astronomical, however perhaps this could be like Y2K all over again. Something to come back and fix later.
 const generateRandomString = function() {
 
   let encodeString = '';
