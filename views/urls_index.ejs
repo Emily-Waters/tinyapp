@@ -21,6 +21,8 @@
           <th scope="col">Short URL</th>
           <th scope="col">Long URL</th>
           <th scope="col">Date Created</th>
+          <th scope="col">Total Visits</th>
+          <th scope="col">Unique Visitors</th>
           <th scope="col">Edit</th>
           <th scope="col">Delete</th>
         </tr>
@@ -31,6 +33,8 @@
             <td><a href="u/<%= url %>"><%= url %></a></td>
             <td><a href="u/<%= url %>"><%= urls[url].longURL %></a></td>
             <td><%= urls[url].date %></td>
+            <td><%= urls[url].visits %></td>
+            <td><%= urls[url].visitors.length %></td>
             <td>
               <form method="GET" action="/urls/<%=url%>">
                 <button class="btn btn-primary" style="background-color:white; border: 2px solid; border-color: blue; color: blue;">Edit
@@ -43,9 +47,17 @@
                 </button>
               </form>
             </td>
-          </tr>          
+          </tr>      
         <% } %>
+
       </tbody>
+      <tr>
+        <th scope="col"> <a href="urls/new">New...</a></th>
+
+           
+
+
+    </tr>
       <% } else { %>
         <div class="alert alert-danger" style="text-align: center; margin-top: 10em">
 
