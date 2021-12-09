@@ -19,7 +19,7 @@
           </form>
         <% } else { %>
           <form method="POST" action="/logout/:user_id">
-            <label style ="font-size: large; font-family:'sans-serif';">Signed in as: <%= user_id.email %></label>
+            <label style ="font-size: large; font-family:'sans-serif'; margin-right: 1em;">Signed in as: <%= user_id.email %></label>
             <button class="btn btn-primary" style="background-color:white; border: 2px solid; border-color: red; color: red;">Logout
             </button>
           </form>

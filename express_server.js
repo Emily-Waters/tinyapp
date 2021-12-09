@@ -1,8 +1,3 @@
-//------------------------------DEV TOOLS---------------------------------------
-
-// const morgan = require("morgan");
-// app.use(morgan('tiny'));  // Logs pertinent info to the console for dev
-
 //------------------------------DEPENDENCY IMPORT-------------------------------
 
 const methodOverride = require('method-override');
@@ -10,20 +5,19 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
+const morgan = require("morgan");
 
 //------------------------------CONSTANTS---------------------------------------
-
-
 
 // urlDatabase, urls have an id(shortURL) key that contains a longURL and the userID of who created it. Example format is included.
 const urlDatabase = {
   // b6UTxQ: {
   //   longURL: "https://www.tsn.ca",
   //   userID: "aJ48lW"
-  //   date: ???
-  //   visitors: ???,
-  //   uniqueVisitors: ??,
-  //   dateTimeVisited: ??,
+  //   date: string,
+  //   visitors: 0,
+  //   uniqueVisitors: [],
+  //   dateTimeVisited: []
   // }
 };
 
@@ -61,10 +55,12 @@ app.use(cookieSession({  // Cookie Session stores session cookies on the client
   name: 'session',
   keys: ['user_id','visitor'],
   // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  // maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
 app.use(methodOverride('_method'));
+
+app.use(morgan('tiny'));  // Logs pertinent info to the console for dev
 
 //------------------------------CONNECT-----------------------------------------
 
@@ -144,13 +140,9 @@ app.get("/urls/:shortUrl", (req, res) => {
 
 // Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
-  let userID = grabThemByTheCookie(req);
+  const userID = grabThemByTheCookie(req);
   const shortURL = req.params.shortURL;
   if (validateShortURL(shortURL, urlDatabase)) {
-    // if (!userID) {
-    //   userID = generateRandomString();
-    //   req.session['visitor'] = userID;
-    // }
     analytics(urlDatabase, userID, shortURL);
     const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL);
