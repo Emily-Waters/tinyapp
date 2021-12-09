@@ -19,6 +19,7 @@ const urlDatabase = {
   // b6UTxQ: {
   //   longURL: "https://www.tsn.ca",
   //   userID: "aJ48lW"
+  //   date: ???
   // }
 };
 
@@ -112,12 +113,11 @@ app.get("/urls/new", (req, res) => {
 // Show a URL by its shortURL
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
-  const longURL = urlDatabase[req.params.shortUrl].longURL;
   const userID = grabThemByTheCookie(req);
   if (userID) {
     const templateVars = {
       shortURL,
-      longURL,
+      longURL: urlDatabase[shortURL].longURL,
       "user_id": userDatabase[userID]
     };
     res.render("urls_show",templateVars);

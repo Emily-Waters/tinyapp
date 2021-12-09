@@ -37,7 +37,8 @@ const validatePassword = function(password, email, userDB) {
 
 // Creates a new urlDatabase entry tied to a given userID
 const makeURL = function(userID, urlDB, longURL, encodedString) {
-  urlDB[encodedString] = {longURL: `http://www.${longURL}`, userID: userID};
+  const date = new Date;
+  urlDB[encodedString] = {longURL: `http://www.${longURL}`, userID: userID, date: date.toUTCString()};
 };
 
 // Filters urlDatabase using userID
@@ -73,3 +74,4 @@ module.exports = {
   getUserByEmail,
   grabThemByTheCookie
 };
+
