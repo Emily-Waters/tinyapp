@@ -5,6 +5,7 @@
 
 //------------------------------DEPENDENCY IMPORT-------------------------------
 
+const methodOverride = require('method-override');
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
@@ -56,6 +57,8 @@ app.use(cookieSession({  // Cookie Session stores session cookies on the client
   name: 'session',
   keys: ['user_id']
 }));
+
+app.use(methodOverride('_method'));
 
 //------------------------------CONNECT-----------------------------------------
 
@@ -185,7 +188,7 @@ app.post("/login", (req, res) => {
 // Logout user
 app.post("/logout/:user_id", (req, res) => {
   req.session = null;
-  res.redirect("/login");
+  res.redirect("/urls");
 });
 
 // POST request for new URL's, redirects to urls_show
@@ -197,20 +200,10 @@ app.post("/urls", (req, res) => {
   res.redirect('/urls/' + encodeString);
 });
 
-// Delete URL then redirect back to homepage
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = grabThemByTheCookie(req);
-  const shortURL = req.params.shortURL;
-  if (userID && userID === urlDatabase[shortURL].userID) {
-    delete urlDatabase[shortURL];
-    res.redirect("/urls");
-  } else {
-    res.status(403).send("You do not have permission to delete, please login first\n");
-  }
-});
+//------------------------------PUT ROUTES--------------------------------------
 
 // Edit a URL, then redirect back to homepage
-app.post("/urls/:shortURL/edit", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   const userID = grabThemByTheCookie(req);
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
@@ -222,9 +215,17 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   }
 });
 
+//------------------------------DELETE ROUTES-----------------------------------
 
-
-
-
-
+// Delete URL then redirect back to homepage
+app.delete("/urls/:shortURL", (req, res) => {
+  const userID = grabThemByTheCookie(req);
+  const shortURL = req.params.shortURL;
+  if (userID && userID === urlDatabase[shortURL].userID) {
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("You do not have permission to delete, please login first\n");
+  }
+});
 
