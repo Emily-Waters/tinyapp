@@ -52,6 +52,15 @@ const getURL = function(id, urlDB) {
   return userURLs;
 };
 
+const validateShortURL = function(url,urlDB) {
+  for (const shortURL in urlDB) {
+    if (url === shortURL) {
+      return true;
+    }
+  }
+  return false;
+};
+
 // Looks up unique userID by email, assumes security checks have been passed
 const getUserByEmail = function(email, userDB) {
   for (const userID in userDB)
@@ -71,6 +80,7 @@ module.exports = {
   validatePassword,
   makeURL,
   getURL,
+  validateShortURL,
   getUserByEmail,
   grabThemByTheCookie
 };

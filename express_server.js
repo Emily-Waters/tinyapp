@@ -39,6 +39,7 @@ const {
   validatePassword,
   makeURL,
   getURL,
+  validateShortURL,
   getUserByEmail,
   grabThemByTheCookie,
 } = require('./helpers');
@@ -91,10 +92,15 @@ app.get("/register", (req, res) => {
 
 // User login
 app.get("/login", (req, res) => {
-  const templateVars = {
-    "user_id": userDatabase[req.session.user_id]
-  };
-  res.render("urls_login",templateVars);
+  const userID = grabThemByTheCookie(req);
+  if (!userID) {
+    const templateVars = {
+      "user_id": userDatabase[userID]
+    };
+    res.render("urls_login",templateVars);
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 // New URLs page
@@ -129,8 +135,8 @@ app.get("/urls/:shortUrl", (req, res) => {
 // Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  if (longURL) {
+  if (validateShortURL(shortURL, urlDatabase)) {
+    const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL);
   } else {
     res.status(404).send("404 - Not Found");
