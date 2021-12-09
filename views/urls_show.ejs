@@ -13,13 +13,16 @@
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body" style="margin-bottom: 2em;margin-top:2em">
-        <h4 class="card-title">TinyURL for:<a href="<%= longURL %>">
-
+        <h4 class="card-title">TinyURL for:
+          <a href="<%= longURL %>">
           <%= longURL %>
-        </a>
+          </a>
         </h4>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-
+        <p class="card-text">Short URL: 
+          <a href="/u/<%= shortURL %>">
+            <%= shortURL %>
+          </a>
+        </p>
       </div>
     <div class="card-footer text-muted">Want to change your URL?</div>
   </div>
