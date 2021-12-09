@@ -12,17 +12,21 @@
 
   <div class="card text-center">
       <div class="card-header"></div>
-      <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+      <div class="card-body" style="margin-bottom: 2em;margin-top:2em">
+        <h4 class="card-title">TinyURL for:<a href="<%= longURL %>">
+
+          <%= longURL %>
+        </a>
+        </h4>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-        <p class="card-text">Create a <a href="/urls/new">new</a> Short URL</p>
+
       </div>
-    <div class="card-footer text-muted"></div>
+    <div class="card-footer text-muted">Want to change your URL?</div>
   </div>
 
   <div class="card text-center">
       <div class="card-body">
-        <h3>Edit</h3>
+        <h4>It's never too late to change</h4>
         <form class="form-inline" action="/urls/<%= shortURL %>/edit" method="POST">
           <div class="form-group mb-2"style = "margin-left: auto; margin-right: auto;">
             <label for="longURL">New URL:</label>
@@ -31,7 +35,7 @@
           </div>
         </form>
     </div>
-  <div class="card-footer text-muted"></div>
+  <div class="card-footer text-muted">        <p class="card-text">Create a <a href="/urls/new">new</a> Short URL</p></div>
 </div>
 
   <!-- Bootstrap JS -->
