@@ -82,7 +82,7 @@ const getUserByEmail = function(email, userDB) {
 };
 
 // Cookie grabber
-const grabThemByTheCookie = function(req)  {
+const grabCookies = function(req)  {
   return req.session.user_id;
 };
 
@@ -107,7 +107,7 @@ module.exports = {
   getURL,
   validateShortURL,
   getUserByEmail,
-  grabThemByTheCookie,
+  grabCookies,
   analytics
 };
 

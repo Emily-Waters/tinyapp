@@ -23,7 +23,7 @@ const {
   getURL,
   validateShortURL,
   getUserByEmail,
-  grabThemByTheCookie,
+  grabCookies,
   analytics
 } = require('./helpers');
 
@@ -60,7 +60,7 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 
 // Homepage - Redirects to login
 app.get("/urls", (req, res) => {
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   if (userID) {
     const templateVars = {
       urls: getURL(userID, urlDatabase),
@@ -83,7 +83,7 @@ app.get("/register", (req, res) => {
 
 // User login
 app.get("/login", (req, res) => {
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   if (!userID) {
     const templateVars = {
       "user_id": userDatabase[userID]
@@ -96,7 +96,7 @@ app.get("/login", (req, res) => {
 
 // New URLs page
 app.get("/urls/new", (req, res) => {
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   if (userID) {
     const templateVars = {
       "user_id": userDatabase[userID],
@@ -110,7 +110,7 @@ app.get("/urls/new", (req, res) => {
 // Show a URL by its shortURL
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   if (userID) {
     const templateVars = {
       shortURL,
@@ -126,7 +126,7 @@ app.get("/urls/:shortUrl", (req, res) => {
 
 // Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   const shortURL = req.params.shortURL;
   if (validateShortURL(shortURL, urlDatabase)) {
     analytics(urlDatabase, userID, shortURL);
@@ -185,7 +185,7 @@ app.post("/logout/:user_id", (req, res) => {
 // POST request for new URL's, redirects to urls_show
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   const longURL = req.body.longURL;
   makeEditURL(userID, urlDatabase, longURL, shortURL);
   res.redirect('/urls/' + shortURL);
@@ -195,7 +195,7 @@ app.post("/urls", (req, res) => {
 
 // Edit a URL, then redirect back to homepage
 app.put("/urls/:shortURL", (req, res) => {
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
   if (userID && userID === urlDatabase[shortURL].userID) {
@@ -210,7 +210,7 @@ app.put("/urls/:shortURL", (req, res) => {
 
 // Delete URL then redirect back to homepage
 app.delete("/urls/:shortURL", (req, res) => {
-  const userID = grabThemByTheCookie(req);
+  const userID = grabCookies(req);
   const shortURL = req.params.shortURL;
   if (userID && userID === urlDatabase[shortURL].userID) {
     delete urlDatabase[shortURL];
