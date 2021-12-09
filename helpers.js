@@ -35,10 +35,21 @@ const validatePassword = function(password, email, userDB) {
   return false;
 };
 
-// Creates a new urlDatabase entry tied to a given userID
-const makeURL = function(userID, urlDB, longURL, encodedString) {
+// Creates a new urlDatabase entry, or edits an existing entry
+const makeEditURL = function(userID, urlDB, longURL, shortURL) {
   const date = new Date;
-  urlDB[encodedString] = {longURL: `http://www.${longURL}`, userID: userID, date: date.toUTCString()};
+  if (!urlDB[shortURL]) {
+    urlDB[shortURL] = {
+      longURL: 'http://www.' + longURL,
+      userID,
+      date: date.toUTCString(),
+      visits: 0,
+      visitors: [],
+      datesvisited: []
+    };
+  } else {
+    urlDB[shortURL].longURL = 'http://www.' + longURL;
+  }
 };
 
 // Filters urlDatabase using userID
@@ -74,14 +85,28 @@ const grabThemByTheCookie = function(req)  {
   return req.session.user_id;
 };
 
+const analytics = function(urlDatabase, userID, shortURL) {
+  const date = new Date;
+  urlDatabase[shortURL].visits += 1;
+  if (!urlDatabase[shortURL].visitors.includes(userID)) {
+    if (!userID) {
+      // Can't quite figure out how to actually set a unique cookie on the client, so I'm just assigning them a uniqueID if theyre not signed in on tinyApp
+      userID = generateRandomString();
+    }
+    urlDatabase[shortURL].visitors.push(userID);
+  }
+  urlDatabase[shortURL].datesvisited.push("Date Visited: " + date.toUTCString() + " | User: " + userID);
+};
+
 module.exports = {
   generateRandomString,
   validateEmail,
   validatePassword,
-  makeURL,
+  makeEditURL,
   getURL,
   validateShortURL,
   getUserByEmail,
-  grabThemByTheCookie
+  grabThemByTheCookie,
+  analytics
 };
 

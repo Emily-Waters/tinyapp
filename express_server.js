@@ -21,6 +21,9 @@ const urlDatabase = {
   //   longURL: "https://www.tsn.ca",
   //   userID: "aJ48lW"
   //   date: ???
+  //   visitors: ???,
+  //   uniqueVisitors: ??,
+  //   dateTimeVisited: ??,
   // }
 };
 
@@ -38,11 +41,12 @@ const {
   generateRandomString,
   validateEmail,
   validatePassword,
-  makeURL,
+  makeEditURL,
   getURL,
   validateShortURL,
   getUserByEmail,
   grabThemByTheCookie,
+  analytics
 } = require('./helpers');
 
 //------------------------------APP SETUP---------------------------------------
@@ -55,7 +59,9 @@ app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URLs
 
 app.use(cookieSession({  // Cookie Session stores session cookies on the client
   name: 'session',
-  keys: ['user_id']
+  keys: ['user_id','visitor'],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
 app.use(methodOverride('_method'));
@@ -127,7 +133,8 @@ app.get("/urls/:shortUrl", (req, res) => {
     const templateVars = {
       shortURL,
       longURL: urlDatabase[shortURL].longURL,
-      "user_id": userDatabase[userID]
+      "user_id": userDatabase[userID],
+      urlDatabase
     };
     res.render("urls_show",templateVars);
   } else {
@@ -137,8 +144,14 @@ app.get("/urls/:shortUrl", (req, res) => {
 
 // Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
+  let userID = grabThemByTheCookie(req);
   const shortURL = req.params.shortURL;
   if (validateShortURL(shortURL, urlDatabase)) {
+    // if (!userID) {
+    //   userID = generateRandomString();
+    //   req.session['visitor'] = userID;
+    // }
+    analytics(urlDatabase, userID, shortURL);
     const longURL = urlDatabase[shortURL].longURL;
     res.redirect(longURL);
   } else {
@@ -193,11 +206,11 @@ app.post("/logout/:user_id", (req, res) => {
 
 // POST request for new URL's, redirects to urls_show
 app.post("/urls", (req, res) => {
-  const encodeString = generateRandomString();
+  const shortURL = generateRandomString();
   const userID = grabThemByTheCookie(req);
   const longURL = req.body.longURL;
-  makeURL(userID, urlDatabase, longURL, encodeString);
-  res.redirect('/urls/' + encodeString);
+  makeEditURL(userID, urlDatabase, longURL, shortURL);
+  res.redirect('/urls/' + shortURL);
 });
 
 //------------------------------PUT ROUTES--------------------------------------
@@ -208,7 +221,7 @@ app.put("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
   if (userID && userID === urlDatabase[shortURL].userID) {
-    makeURL(userID, urlDatabase, longURL, shortURL);
+    makeEditURL(userID, urlDatabase, longURL, shortURL);
     res.redirect("/urls");
   } else {
     res.status(403).send("You do not have permission to edit, please login first\n");
