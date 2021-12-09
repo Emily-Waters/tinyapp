@@ -122,7 +122,7 @@ app.get("/urls/:shortUrl", (req, res) => {
     };
     res.render("urls_show",templateVars);
   } else {
-    res.redirect("/login");
+    res.redirect(403,"/login");
   }
 });
 
@@ -154,9 +154,9 @@ app.post("/register", (req, res) => {
     req.session['user_id'] = userID;
     res.redirect("/urls");
   } else if (validateEmail(email, userDatabase)) {
-    res.status(400).send("That email address is already in use\n");
+    res.redirect(400,"/register");
   } else {
-    res.status(400).send("Invalid email or password\n");
+    res.redirect(400,"/register");
   }
 });
 
