@@ -3,10 +3,8 @@ const bcrypt = require('bcryptjs');
 // Generate encoded string
 // Not bothering to check if the string is unique, as the odds of it being nonunique are astronomical, however perhaps this could be like Y2K all over again. Something to come back and fix later.
 const generateRandomString = function() {
-
   let encodeString = '';
   let randomNumber = (Math.floor((Math.random() * 122) + 1));
-
   while (encodeString.length < 6) {
     randomNumber = (Math.floor((Math.random() * 122) + 1));
     if (randomNumber >= 48 && randomNumber <= 57 || randomNumber >= 65 && randomNumber <= 90 || randomNumber >= 97 && randomNumber <= 122) {
@@ -51,6 +49,22 @@ const makeEditURL = function(userID, urlDB, longURL, shortURL) {
   } else {
     urlDB[shortURL].longURL = longURL;
   }
+};
+
+const editURL = function(userID, urlDB, longURL, shortURL) {
+  urlDB[shortURL].longURL = longURL;
+};
+
+const makeURL = function(userID, urlDB, longURL, shortURL) {
+  const date = new Date;
+  urlDB[shortURL] = {
+    longURL: longURL,
+    userID,
+    date: date.toUTCString(),
+    visits: 0,
+    visitors: [],
+    datesvisited: []
+  };
 };
 
 // Filters urlDatabase using userID
@@ -99,7 +113,8 @@ module.exports = {
   generateRandomString,
   validateEmail,
   validatePassword,
-  makeEditURL,
+  makeURL,
+  editURL,
   getURL,
   validateShortURL,
   getUserByEmail,
