@@ -125,7 +125,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const userID = grabCookies(req);
-  if (userID) {
+  if (userID && urlDatabase[shortURL].userID === userID) {
     const templateVars = {
       shortURL,
       longURL: urlDatabase[shortURL].longURL,
