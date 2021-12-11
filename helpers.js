@@ -41,7 +41,7 @@ const makeEditURL = function(userID, urlDB, longURL, shortURL) {
   const date = new Date;
   if (!urlDB[shortURL]) {
     urlDB[shortURL] = {
-      longURL: 'http://www.' + longURL,
+      longURL: longURL,
       userID,
       date: date.toUTCString(),
       visits: 0,
@@ -49,7 +49,7 @@ const makeEditURL = function(userID, urlDB, longURL, shortURL) {
       datesvisited: []
     };
   } else {
-    urlDB[shortURL].longURL = 'http://www.' + longURL;
+    urlDB[shortURL].longURL = longURL;
   }
 };
 
