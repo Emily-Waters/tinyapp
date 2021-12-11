@@ -38,7 +38,7 @@ app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URLs
 app.use(cookieSession({  // Cookie Session encrypts cookies
   name: 'session',
   keys: ['user_id','visitor'],
-  // maxAge: 24 * 60 * 60 * 1000 // 24 hour expiry for cookies, disabled by default
+  maxAge: 24 * 60 * 60 * 1000 // 24 hour expiry for cookies, disabled by default
 }));
 
 app.use(methodOverride('_method')); // Allows for use of PUT and DELETE
@@ -140,7 +140,14 @@ app.get("/urls/:shortUrl", (req, res) => {
 
 // Redirects to actual site using shortURL
 app.get("/u/:shortURL", (req, res) => {
-  const userID = grabCookies(req);
+  let userID = grabCookies(req);
+  if (!userID) {
+    userID = generateRandomString();
+    userDatabase[userID] = {
+      id: userID,
+    };
+    req.session['user_id'] = userID;
+  }
   const shortURL = req.params.shortURL;
   if (validateShortURL(shortURL, urlDatabase)) {
     analytics(urlDatabase, userID, shortURL);

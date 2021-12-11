@@ -90,10 +90,6 @@ const analytics = function(urlDatabase, userID, shortURL) {
   const date = new Date;
   urlDatabase[shortURL].visits += 1;
   if (!urlDatabase[shortURL].visitors.includes(userID)) {
-    if (!userID) {
-      // Can't quite figure out how to actually set a unique cookie on the client, so I'm just assigning them a uniqueID if theyre not signed in on tinyApp
-      userID = generateRandomString();
-    }
     urlDatabase[shortURL].visitors.push(userID);
   }
   urlDatabase[shortURL].datesvisited.push("Date Visited: " + date.toUTCString() + " | User: " + userID);
