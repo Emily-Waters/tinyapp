@@ -105,16 +105,20 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const userID = grabCookies(req);
-  if (userID && urlDatabase[shortURL] && urlDatabase[shortURL].userID === userID) {
-    const templateVars = {
-      shortURL,
-      longURL: urlDatabase[shortURL].longURL,
-      "user_id": userDatabase[userID],
-      urlDatabase
-    };
-    res.render("urls_show",templateVars);
+  if (urlDatabase[shortURL]) {
+    if (userID && urlDatabase[shortURL].userID === userID) {
+      const templateVars = {
+        shortURL,
+        longURL: urlDatabase[shortURL].longURL,
+        "user_id": userDatabase[userID],
+        urlDatabase
+      };
+      res.render("urls_show",templateVars);
+    } else {
+      res.redirect(403,"/login");
+    }
   } else {
-    res.redirect(403,"/login");
+    res.redirect(404, '/urls');
   }
 });
 
