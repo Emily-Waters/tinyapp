@@ -58,6 +58,20 @@ app.listen(PORT, () => {  // Begin listening on port 8080
 
 //------------------------------GET ROUTES--------------------------------------
 
+// Index
+app.get('/', (req, res) => {
+  const userID = grabCookies(req);
+  if (userID) {
+    const templateVars = {
+      urls: getURL(userID, urlDatabase),
+      "user_id": userDatabase[userID]
+    };
+    res.render("urls_index", templateVars);
+  } else {
+    res.redirect('/login');
+  }
+});
+
 // Homepage - Redirects to login
 app.get("/urls", (req, res) => {
   const userID = grabCookies(req);
