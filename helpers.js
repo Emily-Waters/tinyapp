@@ -34,27 +34,7 @@ const validatePassword = function(password, email, userDB) {
   return false;
 };
 
-// Creates a new urlDatabase entry, or edits an existing entry
-const makeEditURL = function(userID, urlDB, longURL, shortURL) {
-  const date = new Date;
-  if (!urlDB[shortURL]) {
-    urlDB[shortURL] = {
-      longURL: longURL,
-      userID,
-      date: date.toUTCString(),
-      visits: 0,
-      visitors: [],
-      datesvisited: []
-    };
-  } else {
-    urlDB[shortURL].longURL = longURL;
-  }
-};
-
-const editURL = function(userID, urlDB, longURL, shortURL) {
-  urlDB[shortURL].longURL = longURL;
-};
-
+// Make a new longURL
 const makeURL = function(userID, urlDB, longURL, shortURL) {
   const date = new Date;
   urlDB[shortURL] = {
@@ -65,6 +45,11 @@ const makeURL = function(userID, urlDB, longURL, shortURL) {
     visitors: [],
     datesvisited: []
   };
+};
+
+// Edit the longURL of an existing URL
+const editURL = function(userID, urlDB, longURL, shortURL) {
+  urlDB[shortURL].longURL = longURL;
 };
 
 // Filters urlDatabase using userID
