@@ -94,7 +94,7 @@ app.get("/login", (req, res) => {
   }
 });
 
-// New URLs page
+// New URLs page. Checks if user is logged in and shows the create new URL page, otherwise redirects to login.
 app.get("/urls/new", (req, res) => {
   const userID = grabCookies(req);
   if (userID) {
