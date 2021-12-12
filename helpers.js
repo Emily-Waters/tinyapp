@@ -71,7 +71,7 @@ const validateShortURL = function(shortURL, urlDatabase) {
   return false;
 };
 
-const validatePermission = function(userID, urlDatabase, shortURL) {
+const validateUser = function(userID, urlDatabase, shortURL) {
   if (urlDatabase[shortURL].userID === userID) {
     return true;
   }
@@ -109,7 +109,7 @@ module.exports = {
   editURL,
   getURL,
   validateShortURL,
-  validatePermission,
+  validateUser,
   getUserByEmail,
   grabCookies,
   analytics
