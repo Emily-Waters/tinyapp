@@ -63,11 +63,10 @@ const getURL = function(id, urlDB) {
   return userURLs;
 };
 
-const validateShortURL = function(url,urlDB) {
-  for (const shortURL in urlDB) {
-    if (url === shortURL) {
-      return true;
-    }
+// Check if the specified shortURL exists in the database
+const validateShortURL = function(shortURL, urlDatabase) {
+  if (urlDatabase[shortURL]) {
+    return true;
   }
   return false;
 };
