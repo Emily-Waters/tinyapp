@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({extended: true})); // Parse encoded URLs
 app.use(cookieSession({  // Cookie Session encrypts cookies
   name: 'session',
   keys: ['user_id','visitor'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hour expiry for cookies, disabled by default
+  // maxAge: 24 * 60 * 60 * 1000 // 24 hour expiry for cookies, disabled by default
 }));
 app.use(methodOverride('_method')); // Allows for use of PUT and DELETE
 //------------------------------CONNECT-----------------------------------------
@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
   }
 });
 
-// Homepage - Redirects to login
+// Homepage - Redirects to login if not logged in
 app.get("/urls", (req, res) => {
   const userID = grabCookies(req);
   if (userID) {
@@ -68,11 +68,15 @@ app.get("/urls", (req, res) => {
 
 // Register new user
 app.get("/register", (req, res) => {
-  const userID = userDatabase[req.session.user_id];
-  const templateVars = {
-    "user_id": userID
-  };
-  res.render("urls_register", templateVars);
+  const userID = grabCookies(req);
+  if (!userID) {
+    const templateVars = {
+      "user_id": userID
+    };
+    res.render("urls_register", templateVars);
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 // User login
@@ -101,7 +105,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-// Show a URL by its shortURL
+// Show a URL by its shortURL. Checks first that the shortURL exists in the database, otherwise redirect to /urls with a 404 error, otherwise then checks if the current user owns the shortURL and then renders the url_show page, otherwise redirect to login with 403(forbidden) error.
 app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const userID = grabCookies(req);
@@ -122,7 +126,7 @@ app.get("/urls/:shortUrl", (req, res) => {
   }
 });
 
-// Redirects to actual site using shortURL
+// Redirects to actual site using shortURL. Checks if the user is logged in for tracking cookies, otherwise sets a cookie, then checks if the shortURL exists and tracks data in analytics and redirects to the longURL, otherwise 404 error and redirect to index
 app.get("/u/:shortURL", (req, res) => {
   if (!grabCookies(req)) {
     const userID = generateRandomString();
@@ -142,7 +146,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 //------------------------------POST ROUTES-------------------------------------
-// Register new user
+// Register new user. Check first if the email does not already exist in the user database while alos checking if the password and email fields were both filled in, then make a user database entry with a random string as the userID, and encrypts the password, then sets a cookie and redirects to the /urls page on success, otherwise redirects.
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -156,14 +160,12 @@ app.post("/register", (req, res) => {
     };
     req.session['user_id'] = userID;
     res.redirect("/urls");
-  } else if (validateEmail(email, userDatabase)) {
-    res.redirect(400,"/register");
   } else {
     res.redirect(400,"/register");
   }
 });
 
-// Login user
+// Login user. Check that email and password provided match what is in the database for that user, then set a cookie and redirect to /urls. Otherwise, 403 forbidden error and redirect to login.
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -177,13 +179,13 @@ app.post("/login", (req, res) => {
   }
 });
 
-// Logout user
+// Logout user. Delete cookies and redirect to /urls
 app.post("/logout/:user_id", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
-// POST request for new URL's, redirects to urls_show
+// POST request for new URL. Creates a random string to assign as the shortURL, gets the userID of the current logged in user to assign ownership then makes a new database entry, then redirects to urls_show
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   const userID = grabCookies(req);
@@ -192,7 +194,7 @@ app.post("/urls", (req, res) => {
   res.redirect('/urls/' + shortURL);
 });
 //------------------------------PUT ROUTES--------------------------------------
-// Edit a URL, then redirect back to homepage
+// Edit a URL. Checks if the user is logged in and if they have ownership of the specified shortURL, then redirect back to homepage, otherwise 403 error and redirect to login
 app.put("/urls/:shortURL", (req, res) => {
   const userID = grabCookies(req);
   const shortURL = req.params.shortURL;
@@ -205,7 +207,7 @@ app.put("/urls/:shortURL", (req, res) => {
   }
 });
 //------------------------------DELETE ROUTES-----------------------------------
-// Delete URL then redirect back to homepage
+// Delete URL. Checks if a user is logged in and if they own the shortURL, deletes database entry and redirects to /urls. Otherwise, 403 error and redirect to login.
 app.delete("/urls/:shortURL", (req, res) => {
   const userID = grabCookies(req);
   const shortURL = req.params.shortURL;
