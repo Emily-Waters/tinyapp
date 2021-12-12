@@ -38,16 +38,17 @@ app.listen(PORT, () => {  // Begin listening on port 8080
   console.log(`tinyapp listening on port ${PORT}!`);
 });
 //------------------------------GET ROUTES--------------------------------------
-// Index
+// Index. Checks if user is logged in and shows index page, otherwise redirects to login.
 app.get('/', (req, res) => {
   const userID = grabCookies(req);
-  if (userID) {
+  if (userID && userDatabase[userID]) {
     const templateVars = {
       urls: getURL(userID, urlDatabase),
       "user_id": userDatabase[userID]
     };
     res.render("urls_index", templateVars);
   } else {
+    req.session = null; // Clearing cookies here, if the server is restarted while the browser is still open then the cookies lock up the page
     res.redirect('/login');
   }
 });
@@ -55,18 +56,19 @@ app.get('/', (req, res) => {
 // Homepage - Redirects to login if not logged in
 app.get("/urls", (req, res) => {
   const userID = grabCookies(req);
-  if (userID) {
+  if (userID && userDatabase[userID]) {
     const templateVars = {
       urls: getURL(userID, urlDatabase),
       "user_id": userDatabase[userID]
     };
     res.render("urls_index", templateVars);
   } else {
+    req.session = null; // Clearing cookies here, if the server is restarted while the browser is still open then the cookies lock up the page
     res.redirect(403, '/login');
   }
 });
 
-// Register new user
+// Register page. If user does not have cookies, renders the register page, otherwise redirects to /urls
 app.get("/register", (req, res) => {
   const userID = grabCookies(req);
   if (!userID) {
@@ -79,7 +81,7 @@ app.get("/register", (req, res) => {
   }
 });
 
-// User login
+// User login. If user does not have cookies, renders the login page, otherwise redirects to /urls
 app.get("/login", (req, res) => {
   const userID = grabCookies(req);
   if (!userID) {
