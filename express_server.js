@@ -62,7 +62,7 @@ app.get("/urls", (req, res) => {
     };
     res.render("urls_index", templateVars);
   } else {
-    res.redirect('/login');
+    res.redirect(403, '/login');
   }
 });
 
