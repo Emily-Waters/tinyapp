@@ -202,7 +202,7 @@ app.put("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
   if (userID && userID === urlDatabase[shortURL].userID) {
-    editURL(userID, urlDatabase, longURL, shortURL);
+    editURL(urlDatabase, longURL, shortURL);
     res.redirect("/urls");
   } else {
     res.redirect(403, '/login');

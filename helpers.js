@@ -48,16 +48,16 @@ const makeURL = function(userID, urlDB, longURL, shortURL) {
 };
 
 // Edit the longURL of an existing URL
-const editURL = function(userID, urlDB, longURL, shortURL) {
-  urlDB[shortURL].longURL = longURL;
+const editURL = function(urlDatabase, longURL, shortURL) {
+  urlDatabase[shortURL].longURL = longURL;
 };
 
 // Filters urlDatabase using userID
-const getURL = function(id, urlDB) {
+const getURL = function(userID, urlDatabase) {
   const userURLs = {};
-  for (const shortURL in urlDB) {
-    if (urlDB[shortURL].userID === id) {
-      userURLs[shortURL] = urlDB[shortURL];
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === userID) {
+      userURLs[shortURL] = urlDatabase[shortURL];
     }
   }
   return userURLs;
@@ -72,10 +72,10 @@ const validateShortURL = function(shortURL, urlDatabase) {
 };
 
 // Looks up unique userID by email, assumes security checks have been passed
-const getUserByEmail = function(email, userDB) {
-  for (const userID in userDB)
-    if (userDB[userID].email === email) {
-      return userDB[userID];
+const getUserByEmail = function(email, userDatabase) {
+  for (const userID in userDatabase)
+    if (userDatabase[userID].email === email) {
+      return userDatabase[userID];
     }
 };
 
@@ -84,6 +84,7 @@ const grabCookies = function(req)  {
   return req.session.user_id;
 };
 
+// Tracks information on how many times a shortURL was visited, unique visitors and the datetime visited and by whom
 const analytics = function(urlDatabase, userID, shortURL) {
   const date = new Date;
   urlDatabase[shortURL].visits += 1;
