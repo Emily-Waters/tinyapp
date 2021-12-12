@@ -17,6 +17,7 @@ const {
   editURL,
   getURL,
   validateShortURL,
+  validateUser,
   getUserByEmail,
   grabCookies,
   analytics
@@ -112,7 +113,7 @@ app.get("/urls/:shortUrl", (req, res) => {
   const shortURL = req.params.shortUrl;
   const userID = grabCookies(req);
   if (validateShortURL(shortURL, urlDatabase)) {
-    if (userID && urlDatabase[shortURL].userID === userID) {
+    if (userID && validateUser(userID, urlDatabase, shortURL)) {
       const templateVars = {
         shortURL,
         longURL: urlDatabase[shortURL].longURL,
@@ -201,7 +202,7 @@ app.put("/urls/:shortURL", (req, res) => {
   const userID = grabCookies(req);
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
-  if (userID && userID === urlDatabase[shortURL].userID) {
+  if (userID && validateUser(userID, urlDatabase, shortURL)) {
     editURL(urlDatabase, longURL, shortURL);
     res.redirect("/urls");
   } else {
@@ -213,7 +214,7 @@ app.put("/urls/:shortURL", (req, res) => {
 app.delete("/urls/:shortURL", (req, res) => {
   const userID = grabCookies(req);
   const shortURL = req.params.shortURL;
-  if (userID && userID === urlDatabase[shortURL].userID) {
+  if (userID && validateUser(userID, urlDatabase, shortURL)) {
     delete urlDatabase[shortURL];
     res.redirect("/urls");
   } else {
